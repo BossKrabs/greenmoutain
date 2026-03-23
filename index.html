@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>生产管理中心</title>
+    <style>
+        /* --- 1. 基础布局 CSS --- */
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; align-items: center;
+            background: url('baosheng.jpg') no-repeat;
+            background-size: cover;
+            background-position: 20% top; 
+            background-attachment: fixed;
+            background-color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .right-mask {
+            position: fixed; right: 0; top: 0;
+            width: 25vw; height: 100vh;
+            background-color: rgba(60, 60, 60, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            color: white; z-index: 100;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+        }
+
+        /* --- 2. 登录框 CSS --- */
+        .login-container { width: 80%; max-width: 320px; }
+        .login-container h2 { font-size: 28px; margin: 0 0 10px 0; }
+        .login-container p { font-size: 14px; color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; }
+        .input-group { margin-bottom: 25px; }
+        .input-group label { display: block; font-size: 12px; margin-bottom: 8px; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; }
+        
+        .input-group input {
+            width: 100%; padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px; background: rgba(255, 255, 255, 0.1);
+            color: white; outline: none; transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+
+        .login-btn {
+            width: 100%; padding: 14px; background: white; color: #333;
+            border: none; border-radius: 10px; font-weight: 600;
+            cursor: pointer; transition: 0.3s; margin-top: 15px;
+        }
+
+        .login-btn:hover { background: #f0f0f0; transform: translateY(-2px); }
+
+        /* --- 3. 漂亮弹窗 CSS (之前贴错位置的部分) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.4s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background: white; padding: 40px; border-radius: 20px;
+            text-align: center; transform: scale(0.7);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 320px;
+        }
+
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        .success-icon {
+            width: 60px; height: 60px; background: #4CD964; color: white;
+            border-radius: 50%; line-height: 60px; font-size: 30px; margin: 0 auto 20px;
+        }
+
+        .modal-content h3 { color: #333; margin: 0 0 10px 0; }
+        .modal-content p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        .modal-btn { background: #333; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            body { background-position: center top; }
+            .right-mask { width: 100vw !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="success-icon">✓</div>
+            <h3>登录成功</h3>
+            <p>欢迎进入生产管理中心系统</p>
+            <button id="closeBtn" class="modal-btn">开启工作台</button>
+        </div>
+    </div>
+
+    <div class="right-mask">
+        <div class="login-container">
+            <h2>欢迎回来</h2>
+            <p>生产管理中心 - 数字化控制台</p>
+            <form>
+                <div class="input-group">
+                    <label>用户名</label>
+                    <input type="text" placeholder="请输入用户名">
+                </div>
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" placeholder="请输入密码">
+                </div>
+                <button type="button" id="loginBtn" class="login-btn">立即登录</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- 4. 交互逻辑 JS ---
+        const loginBtn = document.getElementById('loginBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const modal = document.getElementById('successModal');
+
+        // 显示弹窗
+        loginBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+        });
+
+        // 修改：点击“开启工作台”后跳转
+        closeBtn.addEventListener('click', function() {
+        // 改变按钮文字，增加仪式感
+            this.innerText = '正在进入系统...';
+            this.style.opacity = '0.7';
+            this.style.cursor = 'wait'; // 鼠标变成漏斗形状
+    
+        // 延迟 500 毫秒跳转，让用户看清点击反馈，体验更好
+        setTimeout(() => {
+            window.location.href = 'https://www.baidu.com';
+            }, 500);
+        });
+
+
+        // 点击遮罩背景也可以关闭
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) modal.classList.remove('active');
+        });
+
+        // 回车键支持
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+    </script>
+</body>
+</html>
