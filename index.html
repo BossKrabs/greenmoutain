@@ -89,6 +89,19 @@
             body { background-position: center top; }
             .right-mask { width: 100vw !important; }
         }
+
+        /* 震动动画 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .shake-error {
+            animation: shake 0.3s ease-in-out;
+            border-color: #FF3B30 !important; /* 变红 */
+            box-shadow: 0 0 10px rgba(255, 59, 48, 0.4) !important;
+        }
     </style>
 </head>
 <body>
@@ -106,52 +119,66 @@
         <div class="login-container">
             <h2>欢迎回来</h2>
             <p>生产管理中心 - 数字化控制台</p>
-            <form>
+            <form id="loginForm">
                 <div class="input-group">
-                    <label>用户名</label>
-                    <input type="text" placeholder="请输入用户名">
+                    <label>工号 / 用户名</label>
+                    <input type="text" id="username" placeholder="请输入您的账号" required>
                 </div>
-                <div class="input-group">
-                    <label>密码</label>
-                    <input type="password" placeholder="请输入密码">
+                <div class="input-group" style="position: relative;">
+                    <label>登录密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                    <span id="togglePassword" style="position: absolute; right: 10px; top: 35px; cursor: pointer; color: rgba(255,255,255,0.5); font-size: 12px;">显示</span>
+                 </div>
+                <div style="margin-bottom: 20px; display: flex; align-items: center; font-size: 12px; color: rgba(255,255,255,0.6);">
+                    <input type="checkbox" id="rememberMe" style="margin-right: 8px; cursor: pointer;">
+                    <label for="rememberMe" style="cursor: pointer;">记住登录状态</label>
                 </div>
-                <button type="button" id="loginBtn" class="login-btn">立即登录</button>
+                <button type="button" id="loginBtn" class="login-btn">验证并登录</button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- 4. 交互逻辑 JS ---
         const loginBtn = document.getElementById('loginBtn');
-        const closeBtn = document.getElementById('closeBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
         const modal = document.getElementById('successModal');
 
-        // 显示弹窗
+        // 1. 密码明文/密文切换功能
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerText = type === 'password' ? '显示' : '隐藏';
+        });
+
+        // 2. 登录验证逻辑
         loginBtn.addEventListener('click', function() {
-            modal.classList.add('active');
+            const user = usernameInput.value.trim();
+            const pass = passwordInput.value.trim();
+
+        // 预设的正确账号密码（模拟数据库数据）
+            const correctUser = "admin";
+            const correctPass = "123456";
+
+            if (user === correctUser && pass === correctPass) {
+            // 验证成功：显示漂亮弹窗
+                modal.classList.add('active');
+            } else {
+            // 验证失败：触发震动效果
+                const container = document.querySelector('.login-container');
+                container.classList.add('shake-error');
+        
+            // 提示用户（可选）
+                setTimeout(() => {
+                    container.classList.remove('shake-error');
+                    alert('账号或密码不正确，请重试');
+                }, 500);
+            }
         });
 
-        // 修改：点击“开启工作台”后跳转
-        closeBtn.addEventListener('click', function() {
-        // 改变按钮文字，增加仪式感
-            this.innerText = '正在进入系统...';
-            this.style.opacity = '0.7';
-            this.style.cursor = 'wait'; // 鼠标变成漏斗形状
-    
-        // 延迟 500 毫秒跳转，让用户看清点击反馈，体验更好
-        setTimeout(() => {
-            window.location.href = 'https://www.baidu.com';
-            }, 500);
-        });
-
-
-        // 点击遮罩背景也可以关闭
-        modal.addEventListener('click', function(e) {
-            if(e.target === modal) modal.classList.remove('active');
-        });
-
-        // 回车键支持
-        document.addEventListener('keypress', function(e) {
+        // 3. 按回车键也能触发登录
+        document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') loginBtn.click();
         });
     </script>
