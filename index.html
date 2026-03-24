@@ -181,6 +181,17 @@
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') loginBtn.click();
         });
+
+        // 在 index.html 的 <script> 中修改
+        closeBtn.addEventListener('click', function() {
+            this.innerText = '正在进入系统...';
+    
+        // 延迟一小会儿跳转，体验更好
+            setTimeout(() => {
+        // 关键点：跳转到同目录下的 dashboard.html
+            window.location.href = 'dashboard.html'; 
+            }, 600);
+        });
     </script>
 </body>
 </html>
