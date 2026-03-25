@@ -3,233 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>控制台 - 生产管理中心</title>
+    <link rel="stylesheet" href="css/dashboard.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        /* --- 基础布局 --- */
-        * { box-sizing: border-box; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-        body { margin: 0; display: flex; height: 100vh; background: #f4f7f9; color: #333; }
-        
-        /* 侧边栏与导航 */
-        .sidebar { width: 220px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar h2 { font-size: 18px; margin-bottom: 30px; color: #007AFF; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .menu-item { padding: 12px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; color: #aaa; font-size: 14px; }
-        .menu-item.active { background: #007AFF; color: white; }
-        .sub-menu { padding-left: 25px; margin-bottom: 15px; border-left: 1px dashed #444; margin-left: 15px; }
-        .sub-item { padding: 8px; font-size: 13px; color: #888; cursor: pointer; }
-        .sub-item.active { color: #007AFF; font-weight: bold; }
-
-        /* 主区域 */
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; position: relative; }
-        .workshop-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .workshop-btn { padding: 6px 15px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; }
-        .workshop-btn.active { background: #007AFF; color: white; border-color: #007AFF; }
-
-        /* 汇总表单样式 (只读) */
-        .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { background: #f8f9fa; padding: 12px 10px; text-align: left; font-size: 13px; color: #666; }
-        .data-table td { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; font-size: 13px; background: #fdfdfd; color: #444; }
-
-        /* 填写端口弹窗 (Modal) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-content h3 { margin-top: 0; color: #007AFF; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 13px; color: #666; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .form-group input[readonly] { background: #f5f5f5; cursor: not-allowed; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-
-        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; border: none; }
-        .btn-add { background: #007AFF; color: white; }
-        .btn-upload { background: #4CD964; color: white; width: 100%; font-weight: bold; font-size: 15px; }
-        .btn-cancel { background: #eee; color: #666; }
-
-        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
-        .workshop-title { margin: 0 0 10px 5px; font-size: 18px; font-weight: bold; }
-    </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>生产管理中心</h2>
-        <div class="menu-item">📊 核心指标</div>
-        <div class="menu-item active">📋 生产计划</div>
-        <div class="sub-menu">
-            <div class="sub-item">排产计划查询</div>
-            <div class="sub-item">已完成计划</div>
-            <div class="sub-item active">● 生产日报</div>
-        </div>
-        <div class="menu-item">👤 人员管理</div>
-        <div style="margin-top: auto;" class="menu-item" onclick="location.href='index.html'">🚪 退出登录</div>
-    </div>
-
-    <div class="main-content">
-        <div class="workshop-bar" id="workshopBar"></div>
-        <div class="workshop-title" id="currentWorkshopName">当前车间：大力缆</div>
-
-        <div class="toolbar">
-            <button class="btn btn-add" onclick="openInputModal()">📝 进入填写端口 (新增记录)</button>
-            <button class="btn" style="border: 1px solid #ddd" onclick="exportExcel()">📤 导出汇总报表</button>
-            <div id="user-info" style="margin-left: auto; font-size: 12px; color: #888;">操作员：admin</div>
-        </div>
-
-        <div class="table-container">
-            <table class="data-table" id="summaryTable">
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>工序</th>
-                        <th>当日新增计划量</th>
-                        <th>当日自产实际</th>
-                        <th>外协计划</th>
-                        <th style="color: #007AFF;">剩余在手</th>
-                        <th>产能</th>
-                        <th>周期</th>
-                    </tr>
-                </thead>
-                <tbody id="summaryTbody">
-                    <tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">暂无今日上传记录，请点击上方端口填写</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="inputModal">
-        <div class="modal-content">
-            <h3 id="modalTitle">数据记录端口 - 大力缆</h3>
-            <div class="form-group">
-                <label>日期 (自动填充)</label>
-                <input type="date" id="formDate" readonly>
-            </div>
-            <div class="form-group">
-                <label>工序选择/填写</label>
-                <div id="processContainer">
-                    </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group"><label>当日新增计划量</label><input type="number" id="formAdd" value="0" oninput="calcRemaining()"></div>
-                <div class="form-group"><label>当日自产实际产量</label><input type="number" id="formActual" value="0" oninput="calcRemaining()"></div>
-                <div class="form-group"><label>当日外协计划</label><input type="number" id="formOut" value="0" oninput="calcRemaining()"></div>
-                <div class="form-group"><label>剩余在手计划</label><input type="number" id="formRemain" value="0" readonly style="color:#007AFF; font-weight:bold;"></div>
-                <div class="form-group"><label>产能</label><input type="text" id="formCapacity" placeholder="例: 5000米/天"></div>
-                <div class="form-group"><label>周期</label><input type="text" id="formCycle" placeholder="例: 3天"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-                <button class="btn btn-upload" onclick="uploadData()">🚀 点击上传至汇总表</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const workshops = ["大力缆", "中力缆", "小力缆", "中压", "特缆", "防火", "信号", "橡缆"];
-        // 信号车间专用工序
-        const signalProcesses = ["云母带绕包", "绝缘", "单芯绕包", "信号电缆星绞", "信号电缆屏蔽", "成缆", "编织", "内护", "铠装", "钢丝铠装", "外护", "1kV架空线", "10kV架空线"];
         
-        let currentWS = "大力缆";
+        <div class="menu-group">
+            <div class="menu-item-parent" onclick="App.handleMenuClick(this, 'stats')">
+                <span>📊 核心指标</span>
+                <i class="arrow-icon">▶</i>
+            </div>
+            <div class="sub-menu">
+                <div class="sub-item" onclick="App.switchModule('stats', 'overview')">● 数据概览</div>
+            </div>
+        </div>
 
-        window.onload = function() {
-            const bar = document.getElementById('workshopBar');
-            workshops.forEach(ws => {
-                const btn = document.createElement('button');
-                btn.className = `workshop-btn ${ws === currentWS ? 'active' : ''}`;
-                btn.innerText = ws;
-                btn.onclick = () => switchWorkshop(ws, btn);
-                bar.appendChild(btn);
-            });
-        };
+        <div class="menu-group">
+            <div class="menu-item-parent" onclick="App.handleMenuClick(this, 'plan')">
+                <span>📋 生产计划</span>
+                <i class="arrow-icon">▶</i>
+            </div>
+            <div class="sub-menu">
+                <div class="sub-item" onclick="App.switchModule('plan', 'dailyReport')">● 生产日报</div>
+                <div class="sub-item" onclick="App.switchModule('plan', 'scheduling')">● 排产计划</div>
+            </div>
+        </div>
 
-        // 切换车间
-        function switchWorkshop(name, btnElement) {
-            currentWS = name;
-            document.getElementById('currentWorkshopName').innerText = "当前车间：" + name;
-            document.querySelectorAll('.workshop-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            document.getElementById('summaryTbody').innerHTML = `<tr><td colspan="8" style="text-align:center; color:#999; padding:40px;">暂无 ${name} 的上传记录</td></tr>`;
-        }
+        <div class="menu-group" id="menuPersonnelGroup" style="display:none;">
+            <div class="menu-item-parent" onclick="App.handleMenuClick(this, 'personnel')">
+                <span>👤 人员管理</span>
+                <i class="arrow-icon">▶</i>
+            </div>
+            <div class="sub-menu">
+                <div class="sub-item" onclick="App.switchModule('personnel', 'list')">● 账号权限</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: auto;" class="menu-item" onclick="App.logout()">🚪 退出登录</div>
+    </div>
 
-        // 打开填写端口
-        function openInputModal() {
-            document.getElementById('inputModal').style.display = 'flex';
-            document.getElementById('modalTitle').innerText = `数据记录端口 - ${currentWS}`;
-            
-            // 1. 自动设置当天日期
-            document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
-            
-            // 2. 动态生成工序输入组件
-            const container = document.getElementById('processContainer');
-            if (currentWS === "信号") {
-                let html = `<select id="formProcess">`;
-                signalProcesses.forEach(p => html += `<option value="${p}">${p}</option>`);
-                html += `</select>`;
-                container.innerHTML = html;
-            } else {
-                container.innerHTML = `<input type="text" id="formProcess" placeholder="手动输入工序名称">`;
-            }
-        }
+    <div class="main-content" id="mainView">
+        <section id="statsSection" class="content-section" style="display:none;"></section>
+        <section id="planSection" class="content-section" style="display:none;"></section>
+        <section id="personnelSection" class="content-section" style="display:none;"></section>
+    </div>
 
-        function closeModal() {
-            document.getElementById('inputModal').style.display = 'none';
-        }
+    <div id="toastMessage" class="toast">该功能正在开发，请稍等。</div>
 
-        // 自动计算剩余
-        function calcRemaining() {
-            const add = parseFloat(document.getElementById('formAdd').value) || 0;
-            const actual = parseFloat(document.getElementById('formActual').value) || 0;
-            const out = parseFloat(document.getElementById('formOut').value) || 0;
-            document.getElementById('formRemain').value = add - actual - out;
-        }
-
-        // 上传数据至汇总表
-        function uploadData() {
-            const tbody = document.getElementById('summaryTbody');
-            // 如果是初始提示文字，先清空
-            if (tbody.innerHTML.includes("暂无")) tbody.innerHTML = "";
-
-            const data = {
-                date: document.getElementById('formDate').value,
-                process: document.getElementById('formProcess').value,
-                add: document.getElementById('formAdd').value,
-                actual: document.getElementById('formActual').value,
-                out: document.getElementById('formOut').value,
-                remain: document.getElementById('formRemain').value,
-                cap: document.getElementById('formCapacity').value || '-',
-                cycle: document.getElementById('formCycle').value || '-'
-            };
-
-            if (!data.process) { alert("请填写工序"); return; }
-
-            // 创建汇总表行 (纯文本，不可编辑)
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${data.date}</td>
-                <td style="font-weight:bold">${data.process}</td>
-                <td>${data.add}</td>
-                <td>${data.actual}</td>
-                <td>${data.out}</td>
-                <td style="color:#007AFF; font-weight:bold">${data.remain}</td>
-                <td>${data.cap}</td>
-                <td>${data.cycle}</td>
-            `;
-            tbody.appendChild(tr);
-
-            // 重置表单并关闭
-            document.getElementById('formAdd').value = 0;
-            document.getElementById('formActual').value = 0;
-            document.getElementById('formOut').value = 0;
-            document.getElementById('formRemain').value = 0;
-            closeModal();
-            alert("数据已成功上传至汇总表！");
-        }
-
-        function exportExcel() {
-            const table = document.getElementById("summaryTable");
-            const ws = XLSX.utils.table_to_sheet(table);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, currentWS);
-            XLSX.writeFile(wb, `${currentWS}_生产日报汇总_${new Date().toLocaleDateString()}.xlsx`);
-        }
-    </script>
+    <script src="js/modules/dailyReport.js"></script>
+    <script src="js/modules/personnel.js"></script>
+    <script src="js/modules/stats.js"></script>
+    <script src="js/modules/plan.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

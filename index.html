@@ -134,61 +134,87 @@
     </div>
 
     <script>
-        const loginBtn = document.getElementById('loginBtn');
-        const regBtn = document.getElementById('regBtn');
-        const closeBtn = document.getElementById('closeBtn');
-        const modal = document.getElementById('successModal');
-        const loginSection = document.getElementById('loginSection');
-        const registerSection = document.getElementById('registerSection');
+const loginBtn = document.getElementById('loginBtn');
+const regBtn = document.getElementById('regBtn');
+const closeBtn = document.getElementById('closeBtn');
+const modal = document.getElementById('successModal');
+const loginSection = document.getElementById('loginSection');
+const registerSection = document.getElementById('registerSection');
 
-        function toggleForm(type) {
-            if (type === 'register') {
-                loginSection.style.display = 'none';
-                registerSection.style.display = 'block';
-            } else {
-                loginSection.style.display = 'block';
-                registerSection.style.display = 'none';
-            }
+function toggleForm(type) {
+    if (type === 'register') {
+        loginSection.style.display = 'none';
+        registerSection.style.display = 'block';
+    } else {
+        loginSection.style.display = 'block';
+        registerSection.style.display = 'none';
+    }
+}
+
+// 统一的登录验证逻辑
+function performLogin() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+
+    let loginSuccess = false;
+    let userData = null;
+
+    // 1. 验证 Admin
+    if (user === 'admin' && pass === '123456') {
+        loginSuccess = true;
+        userData = { id: 'admin', dept: '生产管理中心' };
+    } else {
+        // 2. 验证 普通用户 (从新逻辑 systemUsers 中读取)
+        const users = JSON.parse(localStorage.getItem('systemUsers') || '{}');
+        if (users[user] && users[user].password === pass) {
+            loginSuccess = true;
+            userData = { id: user, dept: users[user].dept };
+        } 
+        // 3. 兼容旧的简单注册逻辑 (如果没有部门，默认归属为生产管理中心)
+        else if (localStorage.getItem(user) === pass) {
+            loginSuccess = true;
+            userData = { id: user, dept: '生产管理中心' };
         }
+    }
 
-        regBtn.addEventListener('click', function() {
-            const user = document.getElementById('regUsername').value.trim();
-            const pass = document.getElementById('regPassword').value.trim();
-            if (user === "" || pass === "") { alert("请填写完整信息"); return; }
-            localStorage.setItem(user, pass); 
-            alert("注册成功！");
-            toggleForm('login');
-        });
+    if (loginSuccess) {
+        // 重要：存储 dashboard 识别的键名 'currentUserData'
+        localStorage.setItem('currentUserData', JSON.stringify(userData));
+        modal.classList.add('active'); // 显示成功弹窗
+    } else {
+        // 错误反馈
+        document.querySelector('.login-container').classList.add('shake-error');
+        setTimeout(() => document.querySelector('.login-container').classList.remove('shake-error'), 500);
+        alert('工号或密码错误');
+    }
+}
 
-        loginBtn.addEventListener('click', function() {
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const isAdmin = (user === "admin" && pass === "123456");
-            const storedPass = localStorage.getItem(user);
-            const isRegisteredUser = (storedPass !== null && storedPass === pass);
+// 绑定登录按钮
+loginBtn.addEventListener('click', performLogin);
 
-            if (isAdmin || isRegisteredUser) {
-                // 核心修复点：在这里记录当前登录人
-                localStorage.setItem('currentUser', user); 
-                modal.classList.add('active');
-            } else {
-                document.querySelector('.login-container').classList.add('shake-error');
-                setTimeout(() => document.querySelector('.login-container').classList.remove('shake-error'), 500);
-                alert("账号或密码错误");
-            }
-        });
+// 注册逻辑保持不变
+regBtn.addEventListener('click', function() {
+    const user = document.getElementById('regUsername').value.trim();
+    const pass = document.getElementById('regPassword').value.trim();
+    if (user === "" || pass === "") { alert("请填写完整信息"); return; }
+    localStorage.setItem(user, pass); 
+    alert("注册成功！");
+    toggleForm('login');
+});
 
-        closeBtn.addEventListener('click', function() {
-            this.innerText = '正在进入系统...';
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 600);
-        });
+// 弹窗关闭按钮跳转
+closeBtn.addEventListener('click', function() {
+    this.innerText = '正在进入系统...';
+    window.location.href = 'dashboard.html';
+});
 
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (loginSection.style.display !== 'none') loginBtn.click();
-                else regBtn.click();
-            }
-        });
+// 回车键监听
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        if (loginSection.style.display !== 'none') performLogin();
+        else regBtn.click();
+    }
+});
     </script>
 </body>
 </html>
