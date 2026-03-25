@@ -1,15 +1,14 @@
 /* ==================== css/index.css ==================== */
-/* 现代登录页设计：卡片式、蓝色调、微动画 */
+/* 非对称毛玻璃风格：左侧深色沉浸，右侧白色纯净 */
 
 :root {
-    --primary-color: #007AFF;    /* 现代蓝 */
-    --primary-hover: #006EDF;   /* 悬停蓝 */
-    --bg-color: #f0f4f7;        /* 极淡灰蓝背景 */
-    --card-bg: #ffffff;         /* 纯白卡片 */
-    --text-main: #1d1d1f;       /* 深灰主文字 */
-    --text-sub: #86868b;        /* 中灰次文字 */
-    --border-color: #e5e5e7;    /* 淡灰分割线 */
-    --shadow-card: 0 20px 40px rgba(0,0,0,0.1); /* 深阴影提升高级感 */
+    --primary-color: #007AFF;
+    --primary-hover: #006EDF;
+    --dark-glass: rgba(0, 0, 0, 0.45);    /* 左侧深色 */
+    --light-glass: rgba(255, 255, 255, 0.7); /* 右侧白色毛玻璃 */
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-dark: #1d1d1f;                 /* 右侧主文字 */
+    --text-muted: #86868b;                /* 右侧次文字 */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
@@ -19,38 +18,32 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: var(--bg-color);
-    overflow: hidden; /* 防止背景装饰撑开滚动条 */
+    background: url('../baosheng.jpg') center/cover no-repeat;
+    overflow: hidden;
 }
 
-/* 1. 动态背景装饰 */
-.bg-decor { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-.circle { position: absolute; border-radius: 50%; background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,122,255,0.01)); animation: float 10s infinite ease-in-out; }
-.circle-1 { width: 400px; height: 400px; top: -100px; right: -100px; }
-.circle-2 { width: 300px; height: 300px; bottom: -50px; left: -50px; animation-delay: -5s; }
+.bg-decor { display: none; }
 
-@keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
-
-
-/* 2. 登录卡片布局 */
-.login-container { animation: fadeIn 0.6s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
+/* 登录卡片主容器 */
 .login-card {
     display: flex;
     width: 900px;
-    height: 550px;
-    background: var(--card-bg);
+    height: 500px;
     border-radius: 20px;
-    box-shadow: var(--shadow-card);
-    overflow: hidden; /* 圆角包裹内容 */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: fadeIn 0.6s ease-out;
+    border: 1px solid var(--glass-border);
 }
 
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 3. 左侧：品牌展示区 */
+/* 左侧：深色品牌区 */
 .login-brand {
     flex: 1;
-    background: linear-gradient(150deg, #1a1a1a 0%, #333 100%); /* 暗黑质感 */
+    background: var(--dark-glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     color: white;
     padding: 60px;
     display: flex;
@@ -58,52 +51,61 @@ body {
     justify-content: center;
     align-items: center;
     text-align: center;
-    position: relative;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
-.brand-logo { font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 4px 10px rgba(0,122,255,0.3)); }
-.login-brand h1 { font-size: 28px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; }
-.login-brand p { font-size: 14px; color: #aaa; letter-spacing: 1px; }
 
-/* 品牌区装饰线条 */
-.brand-decor { position: absolute; bottom: 40px; left: 60px; width: 50px; height: 4px; background: var(--primary-color); border-radius: 2px; }
+.brand-logo { font-size: 64px; margin-bottom: 20px; }
+.login-brand h1 { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+.login-brand p { font-size: 14px; color: rgba(255,255,255,0.6); letter-spacing: 1px; }
 
+/* 右侧：白色毛玻璃表单区 */
+.login-form {
+    flex: 1.2;
+    background: var(--light-glass);
+    backdrop-filter: blur(20px); /* 稍微增强右侧模糊，屏蔽背景干扰 */
+    -webkit-backdrop-filter: blur(20px);
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
-/* 4. 右侧：表单操作区 */
-.login-form { flex: 1.2; padding: 60px 80px; display: flex; flex-direction: column; justify-content: center; }
-.login-form h2 { font-size: 24px; color: var(--text-main); margin-bottom: 10px; }
-.subtitle { font-size: 14px; color: var(--text-sub); margin-bottom: 40px; }
+.login-form h2 { font-size: 24px; color: var(--text-dark); margin-bottom: 8px; }
+.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 35px; }
 
-/* 输入框组 */
-.input-group { margin-bottom: 20px; }
-.input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: bold; }
+/* 输入框优化：浅灰色背景对齐白色玻璃 */
+.input-group { margin-bottom: 18px; }
+.input-group label { display: block; font-size: 12px; color: #555; margin-bottom: 8px; font-weight: 600; }
 .input-wrapper { position: relative; }
-.input-wrapper .icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #999; }
+.input-wrapper .icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #888; }
 
 .input-wrapper input {
     width: 100%;
-    padding: 12px 15px 12px 45px; /* 左侧留出图标位置 */
-    border: 1px solid var(--border-color);
+    padding: 12px 15px 12px 42px;
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 8px;
     font-size: 14px;
-    color: var(--text-main);
-    background: #fbfbfd;
+    color: var(--text-dark);
+    background: rgba(255, 255, 255, 0.5); /* 半透明白底 */
     transition: all 0.3s;
 }
-.input-wrapper input:focus { border-color: var(--primary-color); outline: none; background: #fff; box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
 
+.input-wrapper input:focus {
+    border-color: var(--primary-color);
+    background: white;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
 
-/* 表单选项 (记住我、忘记密码) */
-.form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; font-size: 13px; }
-.remember-me { color: var(--text-sub); display: flex; align-items: center; gap: 6px; cursor: pointer; }
-.remember-me input { cursor: pointer; }
-.forgot-link { color: var(--primary-color); text-decoration: none; transition: 0.3s; }
-.forgot-link:hover { text-decoration: underline; }
+/* 选项区 */
+.form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px; }
+.remember-me { color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.forgot-link { color: var(--primary-color); text-decoration: none; font-weight: 500; }
 
-
-/* 登录按钮：对齐蓝色风格，增加箭头交互 */
+/* 登录按钮 */
 .login-btn {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     background: var(--primary-color);
     color: white;
     border: none;
@@ -113,13 +115,9 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex; justify-content: center; align-items: center; gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,122,255,0.2);
 }
-.login-btn:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,122,255,0.3); }
-.login-btn:active { transform: translateY(0); }
-
-.btn-arrow { transition: transform 0.3s; }
-.login-btn:hover .btn-arrow { transform: translateX(5px); } /* 悬停时箭头右滑 */
-
+.login-btn:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0,122,255,0.3); }
 
 /* 底部提示 */
-.footer-tips { font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 30px; line-height: 1.6; }
+.footer-tips { font-size: 11px; color: #888; text-align: center; margin-top: 25px; }
