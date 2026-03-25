@@ -15,10 +15,12 @@ const App = {
             if(group) group.style.display = 'block';
         }
         
-        // 默认展开第一个菜单并进入日报
+        // 默认展开第一个菜单（核心指标）并进入数据概览
         const firstGroup = document.querySelector('.menu-group');
         if(firstGroup) firstGroup.classList.add('open');
-        this.switchModule('plan', 'dailyReport');
+        
+        // 统一默认打开：核心指标 -> 数据概览
+        this.switchModule('stats', 'overview');
     },
 
     // 核心逻辑：处理一级菜单点击（折叠/展开）

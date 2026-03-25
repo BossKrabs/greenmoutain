@@ -2,219 +2,64 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>生产管理中心</title>
-    <style>
-        /* --- 保持你原有的 CSS 不变 --- */
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 0; height: 100vh;
-            display: flex; align-items: center;
-            background: url('baosheng.jpg') no-repeat;
-            background-size: cover;
-            background-position: 20% top; 
-            background-attachment: fixed;
-            background-color: #1a1a1a;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
-        }
-        .right-mask {
-            position: fixed; right: 0; top: 0;
-            width: 25vw; height: 100vh;
-            background-color: rgba(60, 60, 60, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex; justify-content: center; align-items: center;
-            color: white; z-index: 100;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.2);
-        }
-        .login-container { width: 80%; max-width: 320px; }
-        .login-container h2 { font-size: 28px; margin: 0 0 10px 0; }
-        .login-container p { font-size: 14px; color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; }
-        .input-group { margin-bottom: 25px; }
-        .input-group label { display: block; font-size: 12px; margin-bottom: 8px; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; }
-        .input-group input {
-            width: 100%; padding: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px; background: rgba(255, 255, 255, 0.1);
-            color: white; outline: none; transition: all 0.3s ease;
-        }
-        .input-group input:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-        }
-        .login-btn {
-            width: 100%; padding: 14px; background: white; color: #333;
-            border: none; border-radius: 10px; font-weight: 600;
-            cursor: pointer; transition: 0.3s; margin-top: 15px;
-        }
-        .login-btn:hover { background: #f0f0f0; transform: translateY(-2px); }
-        .forgot-pwd {
-            display: block; text-align: center; margin-top: 20px;
-            color: rgba(255,255,255,0.6); font-size: 12px; text-decoration: none;
-        }
-        .forgot-pwd:hover { color: white; text-decoration: underline; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.4s ease;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content {
-            background: white; padding: 40px; border-radius: 20px;
-            text-align: center; transform: scale(0.7);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            width: 320px;
-        }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .success-icon {
-            width: 60px; height: 60px; background: #4CD964; color: white;
-            border-radius: 50%; line-height: 60px; font-size: 30px; margin: 0 auto 20px;
-        }
-        .modal-content h3 { color: #333; margin: 0 0 10px 0; }
-        .modal-content p { color: #666; font-size: 14px; margin-bottom: 25px; }
-        .modal-btn { background: #333; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-        .shake-error { animation: shake 0.3s ease-in-out; border-color: #FF3B30 !important; }
-        @media (max-width: 768px) { .right-mask { width: 100vw; } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 生产管理中心</title>
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
 
-    <div id="successModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="success-icon">✓</div>
-            <h3>登录成功</h3>
-            <p>欢迎进入生产管理中心系统</p>
-            <button id="closeBtn" class="modal-btn">开启工作台</button>
-        </div>
+    <div class="bg-decor">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
     </div>
 
-    <div class="right-mask">
-        <div class="login-container">
-            <div id="loginSection">
+    <div class="login-container">
+        <div class="login-card">
+            
+            <div class="login-brand">
+                <div class="brand-logo">🏭</div>
+                <h1>生产管理中心</h1>
+                <p>Digital Production Hub</p>
+                <div class="brand-decor"></div>
+            </div>
+
+            <div class="login-form">
                 <h2>欢迎回来</h2>
-                <p>生产管理中心 - 数字化控制台</p>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label>工号 / 用户名</label>
-                        <input type="text" id="username" placeholder="请输入您的账号">
-                    </div>
-                    <div class="input-group">
-                        <label>登录密码</label>
-                        <input type="password" id="password" placeholder="请输入密码">
-                    </div>
-                    <button type="button" id="loginBtn" class="login-btn">验证并登录</button>
-                </form>
-                
-            </div>
+                <p class="subtitle">请在下方输入您的凭证以访问系统</p>
 
-            <div id="registerSection" style="display: none;">
-                <h2>创建账号</h2>
-                <p>加入生产管理中心系统</p>
-                <form id="registerForm">
-                    <div class="input-group">
-                        <label>设置用户名</label>
-                        <input type="text" id="regUsername" placeholder="建议使用工号">
+                <div class="input-group">
+                    <label for="username">工号 / 用户名</label>
+                    <div class="input-wrapper">
+                        <span class="icon">👤</span>
+                        <input type="text" id="username" placeholder="请输入您的工号" required autocomplete="username">
                     </div>
-                    <div class="input-group">
-                        <label>设置密码</label>
-                        <input type="password" id="regPassword" placeholder="至少6位字符">
+                </div>
+
+                <div class="input-group">
+                    <label for="password">密码</label>
+                    <div class="input-wrapper">
+                        <span class="icon">🔒</span>
+                        <input type="password" id="password" placeholder="请输入您的密码" required autocomplete="current-password">
                     </div>
-                    <button type="button" id="regBtn" class="login-btn">完成注册</button>
-                </form>
-                <a href="javascript:void(0)" class="forgot-pwd" onclick="toggleForm('login')">返回登录</a>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox"> 记住我
+                    </label>
+                    <a href="#" class="forgot-link">忘记密码？</a>
+                </div>
+
+                <button class="login-btn" onclick="handleLogin()">
+                    <span>安全登录</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                
+                <p class="footer-tips">只有admin账号能创建新账号，若需协助请联系管理员。</p>
             </div>
         </div>
     </div>
 
-    <script>
-const loginBtn = document.getElementById('loginBtn');
-const regBtn = document.getElementById('regBtn');
-const closeBtn = document.getElementById('closeBtn');
-const modal = document.getElementById('successModal');
-const loginSection = document.getElementById('loginSection');
-const registerSection = document.getElementById('registerSection');
-
-function toggleForm(type) {
-    if (type === 'register') {
-        loginSection.style.display = 'none';
-        registerSection.style.display = 'block';
-    } else {
-        loginSection.style.display = 'block';
-        registerSection.style.display = 'none';
-    }
-}
-
-// 统一的登录验证逻辑
-function performLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-
-    let loginSuccess = false;
-    let userData = null;
-
-    // 1. 验证 Admin
-    if (user === 'admin' && pass === '123456') {
-        loginSuccess = true;
-        userData = { id: 'admin', dept: '生产管理中心' };
-    } else {
-        // 2. 验证 普通用户 (从新逻辑 systemUsers 中读取)
-        const users = JSON.parse(localStorage.getItem('systemUsers') || '{}');
-        if (users[user] && users[user].password === pass) {
-            loginSuccess = true;
-            userData = { id: user, dept: users[user].dept };
-        } 
-        // 3. 兼容旧的简单注册逻辑 (如果没有部门，默认归属为生产管理中心)
-        else if (localStorage.getItem(user) === pass) {
-            loginSuccess = true;
-            userData = { id: user, dept: '生产管理中心' };
-        }
-    }
-
-    if (loginSuccess) {
-        // 重要：存储 dashboard 识别的键名 'currentUserData'
-        localStorage.setItem('currentUserData', JSON.stringify(userData));
-        modal.classList.add('active'); // 显示成功弹窗
-    } else {
-        // 错误反馈
-        document.querySelector('.login-container').classList.add('shake-error');
-        setTimeout(() => document.querySelector('.login-container').classList.remove('shake-error'), 500);
-        alert('工号或密码错误');
-    }
-}
-
-// 绑定登录按钮
-loginBtn.addEventListener('click', performLogin);
-
-// 注册逻辑保持不变
-regBtn.addEventListener('click', function() {
-    const user = document.getElementById('regUsername').value.trim();
-    const pass = document.getElementById('regPassword').value.trim();
-    if (user === "" || pass === "") { alert("请填写完整信息"); return; }
-    localStorage.setItem(user, pass); 
-    alert("注册成功！");
-    toggleForm('login');
-});
-
-// 弹窗关闭按钮跳转
-closeBtn.addEventListener('click', function() {
-    this.innerText = '正在进入系统...';
-    window.location.href = 'dashboard.html';
-});
-
-// 回车键监听
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        if (loginSection.style.display !== 'none') performLogin();
-        else regBtn.click();
-    }
-});
-    </script>
+    <script src="js/auth.js"></script>
 </body>
 </html>
