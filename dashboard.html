@@ -3,118 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <title>控制台 - 生产管理中心</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: sans-serif; }
-        body { 
-            margin: 0; display: flex; height: 100vh; 
-            background: #f0f2f5; color: #333;
-        }
-
-        /* 侧边栏 */
-        .sidebar {
-            width: 240px; background: #1a1a1a; color: white;
-            padding: 20px; display: flex; flex-direction: column;
-        }
-        .sidebar h2 { font-size: 18px; margin-bottom: 30px; color: #007AFF; }
-        .menu-item { 
-            padding: 12px; margin-bottom: 8px; border-radius: 8px; 
-            cursor: pointer; transition: 0.3s; color: #ccc;
-        }
+        /* --- 基础布局 --- */
+        * { box-sizing: border-box; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+        body { margin: 0; display: flex; height: 100vh; background: #f0f2f5; color: #333; }
+        
+        .sidebar { width: 240px; background: #1a1a1a; color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { font-size: 18px; margin-bottom: 30px; color: #007AFF; text-align: center; }
+        .menu-item { padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; color: #ccc; }
         .menu-item:hover, .menu-item.active { background: #333; color: white; }
-
-        /* 主内容区 */
+        
         .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .header { 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; 
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* --- 生产日报专用样式 --- */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; border: 1px solid #ddd; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-primary { background: #007AFF; color: white; border: none; }
+        .btn-success { background: #4CD964; color: white; border: none; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        /* 隐藏原生文件输入框 */
+        #importInput { display: none; }
 
-        /* 数据卡片布局 */
-        .stats-grid { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 20px; margin-bottom: 30px;
-        }
-        .stat-card { 
-            background: white; padding: 20px; border-radius: 12px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .stat-card h4 { margin: 0; color: #888; font-size: 14px; }
-        .stat-card .value { font-size: 24px; font-weight: bold; margin: 10px 0; color: #007AFF; }
-
-        /* 模拟生产列表表格 */
-        .data-table {
-            background: white; width: 100%; border-collapse: collapse;
-            border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
+        /* --- 数据表格 --- */
+        .data-table { background: white; width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        .data-table th { background: #fafafa; color: #666; }
+        .data-table th { background: #fafafa; color: #666; font-weight: 600; }
+        .data-table td input { border: none; width: 100%; font-size: 14px; outline: none; background: transparent; }
+        .data-table td input:focus { background: #f0f7ff; }
+        
+        .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; background: #e1f5fe; color: #01579b; border: none; cursor: pointer; }
 
-        .status-tag { 
-            padding: 4px 8px; border-radius: 4px; font-size: 12px; 
-            background: #e1f5fe; color: #01579b; 
-        }
+        /* 管理员面板 */
+        #adminPanel { border: 2px solid #007AFF; background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>生产管理中心</h2>
-        <div class="menu-item active">📊 运行概览</div>
-        <div class="menu-item">⚙️ 设备监控</div>
-        <div class="menu-item">📋 生产计划</div>
-        <div class="menu-item">👤 用户管理</div>
+        <div class="menu-item">📊 核心指标</div>
+        <div class="menu-item">⚠️ 预警管理</div>
+        <div class="menu-item active">📋 生产计划 (日报)</div>
+        <div class="menu-item">👤 人员管理</div>
         <div style="margin-top: auto;" class="menu-item" onclick="location.href='index.html'">🚪 退出登录</div>
     </div>
 
     <div class="main-content">
         <div class="header">
-            <h1>运行概览</h1>
-            <div id="user-info">欢迎您，管理员</div>
+            <h1>生产日报管理</h1>
+            <div id="user-info" style="color: #666;">欢迎您</div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4>当日产出</h4>
-                <div class="value">1,284 件</div>
-                <div style="color: #4CD964; font-size: 12px;">↑ 12.5% 较昨日</div>
-            </div>
-            <div class="stat-card">
-                <h4>设备稼动率</h4>
-                <div class="value">98.2%</div>
-                <div style="color: #4CD964; font-size: 12px;">运行正常</div>
-            </div>
-            <div class="stat-card">
-                <h4>待处理预警</h4>
-                <div class="value" style="color: #FF3B30;">3 条</div>
-                <div style="color: #FF3B30; font-size: 12px;">需立即查看</div>
+        <div id="adminPanel" style="display: none;">
+            <h4 style="margin-top:0">账号快捷管理</h4>
+            <div style="display:flex; gap:10px">
+                <input type="text" id="newUsername" placeholder="新工号" style="padding:8px; border:1px solid #ddd; border-radius:4px">
+                <input type="password" id="newPassword" placeholder="初始密码" style="padding:8px; border:1px solid #ddd; border-radius:4px">
+                <button class="btn btn-primary" onclick="addUser()">添加成员</button>
             </div>
         </div>
 
-        <table class="data-table">
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="addNewRow()">➕ 新增日报行</button>
+            <button class="btn" onclick="document.getElementById('importInput').click()">📥 导入 Excel</button>
+            <input type="file" id="importInput" accept=".xlsx, .xls" onchange="importExcel(this)">
+            <button class="btn btn-success" onclick="exportExcel()">📤 导出日报 (Excel)</button>
+            <span style="margin-left: auto; color: #999; font-size: 12px; align-self: center;">* 表格内容可直接点击编辑</span>
+        </div>
+
+        <table class="data-table" id="dailyReportTable">
             <thead>
                 <tr>
+                    <th>日期</th>
                     <th>订单编号</th>
                     <th>生产线</th>
-                    <th>预计交付</th>
+                    <th>产出数量</th>
+                    <th>良品率</th>
+                    <th>负责人</th>
                     <th>状态</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="reportTbody">
                 <tr>
-                    <td>#PO-2026001</td>
-                    <td>A-01 自动化线</td>
-                    <td>2026-03-25</td>
-                    <td><span class="status-tag">生产中</span></td>
-                </tr>
-                <tr>
-                    <td>#PO-2026002</td>
-                    <td>B-04 组装线</td>
-                    <td>2026-03-26</td>
-                    <td><span class="status-tag">待启动</span></td>
+                    <td><input type="date" value="2026-03-25"></td>
+                    <td><input type="text" value="#PO-2026001"></td>
+                    <td><input type="text" value="A-01线"></td>
+                    <td><input type="number" value="500"></td>
+                    <td><input type="text" value="99.2%"></td>
+                    <td><input type="text" value="张师傅"></td>
+                    <td><select class="status-tag"><option>生产中</option><option>已完成</option><option>待启动</option></select></td>
                 </tr>
             </tbody>
         </table>
     </div>
 
+    <script>
+        // 1. 初始化验证
+        window.onload = function() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) { window.location.href = 'index.html'; return; }
+            document.getElementById('user-info').innerText = "当前操作员：" + currentUser;
+            if (currentUser === 'admin') document.getElementById('adminPanel').style.display = 'block';
+        };
+
+        // 2. 新增行功能
+        function addNewRow() {
+            const tbody = document.getElementById('reportTbody');
+            const newRow = document.createElement('tr');
+            const today = new Date().toISOString().split('T')[0];
+            newRow.innerHTML = `
+                <td><input type="date" value="${today}"></td>
+                <td><input type="text" placeholder="输入单号"></td>
+                <td><input type="text" placeholder="生产线"></td>
+                <td><input type="number" placeholder="0"></td>
+                <td><input type="text" placeholder="100%"></td>
+                <td><input type="text" placeholder="姓名"></td>
+                <td><select class="status-tag"><option>待启动</option><option>生产中</option><option>已完成</option></select></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        // 3. 导出 Excel 功能
+        function exportExcel() {
+            const table = document.getElementById("dailyReportTable");
+            
+            // 将 input 里的值动态提取出来，因为 XLSX 直接抓取表格抓不到 input 里的内容
+            const data = [];
+            const rows = table.querySelectorAll("tr");
+            
+            rows.forEach((row, i) => {
+                const cols = row.querySelectorAll("th, td");
+                const rowData = [];
+                cols.forEach(col => {
+                    const input = col.querySelector("input, select");
+                    rowData.push(input ? input.value : col.innerText);
+                });
+                data.push(rowData);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "生产日报");
+            
+            // 导出文件
+            const fileName = `生产日报_${new Date().toLocaleDateString()}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // 4. 导入 Excel 功能
+        function importExcel(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+                // 跳过表头，渲染数据
+                const tbody = document.getElementById('reportTbody');
+                tbody.innerHTML = ""; // 清空旧数据
+                
+                json.forEach((row, index) => {
+                    if (index === 0) return; // 跳过第一行标题
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><input type="text" value="${row[0] || ''}"></td>
+                        <td><input type="text" value="${row[1] || ''}"></td>
+                        <td><input type="text" value="${row[2] || ''}"></td>
+                        <td><input type="number" value="${row[3] || 0}"></td>
+                        <td><input type="text" value="${row[4] || ''}"></td>
+                        <td><input type="text" value="${row[5] || ''}"></td>
+                        <td><select class="status-tag"><option ${row[6]=='生产中'?'selected':''}>生产中</option><option ${row[6]=='已完成'?'selected':''}>已完成</option><option ${row[6]=='待启动'?'selected':''}>待启动</option></select></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 5. 管理员添加用户（保留之前的功能）
+        function addUser() {
+            const user = document.getElementById('newUsername').value.trim();
+            const pass = document.getElementById('newPassword').value.trim();
+            if (user && pass) {
+                localStorage.setItem(user, pass);
+                alert("添加成功：" + user);
+                document.getElementById('newUsername').value = "";
+                document.getElementById('newPassword').value = "";
+            }
+        }
+    </script>
 </body>
 </html>
